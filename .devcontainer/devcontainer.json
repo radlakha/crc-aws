@@ -1,0 +1,27 @@
+{
+  "name": "Cloud Resume Challenge Dev Env",
+  "image": "mcr.microsoft.com/vscode/devcontainers/base:ubuntu-22.04",
+  "features": {
+    "ghcr.io/devcontainers/features/node:1": {},  // For Gemini CLI (npm)
+    "ghcr.io/devcontainers/features/aws-cli:1": {},  // AWS CLI
+    "ghcr.io/devcontainers/features/terraform:1": {},  // Terraform
+    "ghcr.io/devcontainers/features/git:1": {}  // Git (enhanced)
+  },
+  "postCreateCommand": "bash .devcontainer/setup.sh",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "HashiCorp.terraform",
+        "AmazonWebServices.aws-toolkit-vscode",
+        "GitHub.vscode-pull-request-github",
+        "GoogleCloudTools.cloudcode"
+      ]
+    }
+  },
+  "settings": {
+    "terminal.integrated.defaultProfile.linux": "zsh"
+  },
+  "remoteEnv": {
+    "DOTFILES_REPO": "https://github.com/radlakha/dotfiles.git" 
+  }
+}

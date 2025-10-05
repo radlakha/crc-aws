@@ -14,7 +14,8 @@ jobs:
       with:
         role-arn: arn:aws:iam::435869085347:role/github-s3-deploy-role
         aws-region: us-east-1
-    - uses: aws-actions/s3-sync@v1
+    - uses: jakejarvis/s3-sync-action@v0.5.1
       with:
-        source: .
-        destination: s3://cloud-resume-challenge-raman-2025
+        source: '.'
+        dest: 's3://cloud-resume-challenge-raman-2025-east1'
+        region: us-east-1  # Your bucket region

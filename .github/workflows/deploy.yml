@@ -14,8 +14,5 @@ jobs:
       with:
         role-to-assume: arn:aws:iam::435869085347:role/github-s3-deploy-role
         aws-region: us-east-1
-    - uses: jakejarvis/s3-sync-action@v0.5.1
-      with:
-        source: '.'
-        dest: 's3://cloud-resume-challenge-raman-2025-east1'
-        region: us-east-1  # Your bucket region
+    - name: Sync to S3
+      run: aws s3 sync . s3://cloud-resume-challenge-raman-2025-east1 --delete

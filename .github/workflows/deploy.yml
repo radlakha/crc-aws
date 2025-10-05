@@ -12,7 +12,7 @@ jobs:
     - uses: actions/checkout@v4
     - uses: aws-actions/configure-aws-credentials@v4
       with:
-        role-arn: arn:aws:iam::435869085347:role/github-s3-deploy-role
+        role-to-assume: arn:aws:iam::435869085347:role/github-s3-deploy-role
         aws-region: us-east-1
     - uses: jakejarvis/s3-sync-action@v0.5.1
       with:

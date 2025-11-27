@@ -22,10 +22,13 @@ jobs:
           role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}   # store ARN in a secret
           aws-region: us-east-1
           
-      - name: Ensure AWS CLI is available
-        uses: aws-actions/setup-aws-cli@v2
       - name: Sync site to S3
-        run: aws s3 sync site/ s3://cloud-resume-challenge-raman-2025-east1 --delete  # Only site/; replace bucket
+        run: |
+          echo "Starting S3 sync"
+          aws s3 sync site/ s3://cloud-resume-challenge-raman-2025-east1 --delete  # Only site/; replace bucket
+          echo "S3 sync complete"
      
       - name: Invalidate CloudFront Cache
-        run: aws cloudfront create-invalidation --distribution-id ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }} --paths "/*"
+        run: |
+          aws cloudfront create-invalidation --distribution-id ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }} --paths "/*"
+          echo "Cloudfront Cache Invalidated"

@@ -2,6 +2,9 @@ name: Deploy to S3
 on:
   push:
     branches: [ main ]
+    paths:
+      - 'site/**'   # only trigger when files under site/ change
+      
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -9,23 +12,21 @@ jobs:
       id-token: write
       contents: read
     steps:
-    - uses: actions/checkout@v4
-    - name: Check for site changes
-      id: changes
-      run: |
-        if git diff --name-only HEAD~1 | grep -q '^site/'; then
-          echo "changes=true" >> $GITHUB_OUTPUT
-        else
-          echo "changes=false" >> $GITHUB_OUTPUT
-        fi
-    - uses: aws-actions/configure-aws-credentials@v4
-      if: steps.changes.outputs.changes == 'true'
-      with:
-        role-to-assume: arn:aws:iam::435869085347:role/github-s3-deploy-role  # Your role ARN
-        aws-region: us-east-1  # Your bucket region
-    - name: Sync site to S3
-      if: steps.changes.outputs.changes == 'true'
-      run: aws s3 sync site/ s3://cloud-resume-challenge-raman-2025 --delete  # Only site/; replace bucket
-    - name: Invalidate CloudFront Cache
-      if: steps.changes.outputs.changes == 'true'
-      run: aws cloudfront create-invalidation --distribution-id ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }} --paths "/*"
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+   
+      - name: Configure AWS credentials (OIDC assume role)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}   # store ARN in a secret
+          aws-region: us-east-1
+          
+      - name: Ensure AWS CLI is available
+        uses: aws-actions/setup-aws-cli@v2
+      - name: Sync site to S3
+        run: aws s3 sync site/ s3://cloud-resume-challenge-raman-2025-east1 --delete  # Only site/; replace bucket
+     
+      - name: Invalidate CloudFront Cache
+        if: ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID != '' }}
+        run: aws cloudfront create-invalidation --distribution-id ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }} --paths "/*"

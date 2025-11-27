@@ -214,3 +214,6 @@ terraform.tfvars
 *.tfstate
 *.tfstate.*
 crash.log
+
+# VSCode
+.vscode/

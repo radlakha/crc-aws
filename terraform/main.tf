@@ -8,24 +8,12 @@ terraform {
 }
 
 provider "aws" {
-  profile = var.aws_profile
-  region = var.aws_region
+  profile = "terraform-user"
+  region  = var.aws_region
 }
 
 resource "aws_s3_bucket" "resume_bucket" {
   bucket = var.bucket_name
-}
-
-resource "aws_s3_bucket_website_configuration" "resume_bucket" {
-  bucket = aws_s3_bucket.resume_bucket.id
-
-  index_document {
-    suffix = "index.html"
-  }
-
-  error_document {
-    key = "error.html"
-  }
 }
 
 resource "aws_s3_bucket_policy" "resume_policy" {
@@ -66,9 +54,7 @@ resource "aws_cloudfront_distribution" "resume_dist" {
     domain_name = aws_s3_bucket.resume_bucket.bucket_regional_domain_name
     origin_id   = aws_s3_bucket.resume_bucket.id
 
-    s3_origin_config {
-      origin_access_identity = aws_cloudfront_origin_access_identity.resume_oai.cloudfront_access_identity_path
-    }
+    origin_access_control_id = aws_cloudfront_origin_access_control.resume_oac.id
   }
 
   enabled             = true
@@ -109,6 +95,22 @@ resource "aws_cloudfront_distribution" "resume_dist" {
   }
 }
 
-resource "aws_cloudfront_origin_access_identity" "resume_oai" {
-  comment = "OAI for resume site"
+resource "aws_cloudfront_origin_access_control" "resume_oac" {
+  name                              = "resume-oac"
+  description                       = "OAC for resume site"
+  origin_access_control_origin_type = "s3"
+  signing_behavior                  = "always"
+  signing_protocol                  = "sigv4"
+}
+
+output "cloudfront_domain" {
+  value = aws_cloudfront_distribution.resume_dist.domain_name
+}
+
+output "bucket_name" {
+  value = aws_s3_bucket.resume_bucket.bucket
+}
+
+output "bucket_arn" {
+  value = aws_s3_bucket.resume_bucket.arn
 }

@@ -10,9 +10,22 @@ jobs:
       contents: read
     steps:
     - uses: actions/checkout@v4
+    - name: Check for site changes
+      id: changes
+      run: |
+        if git diff --name-only HEAD~1 | grep -q '^site/'; then
+          echo "changes=true" >> $GITHUB_OUTPUT
+        else
+          echo "changes=false" >> $GITHUB_OUTPUT
+        fi
     - uses: aws-actions/configure-aws-credentials@v4
+      if: steps.changes.outputs.changes == 'true'
       with:
-        role-to-assume: arn:aws:iam::435869085347:role/github-s3-deploy-role
-        aws-region: us-east-1
-    - name: Sync to S3
-      run: aws s3 sync . s3://cloud-resume-challenge-raman-2025-east1 --delete
+        role-to-assume: arn:aws:iam::435869085347:role/github-s3-deploy-role  # Your role ARN
+        aws-region: us-east-1  # Your bucket region
+    - name: Sync site to S3
+      if: steps.changes.outputs.changes == 'true'
+      run: aws s3 sync site/ s3://cloud-resume-challenge-raman-2025 --delete  # Only site/; replace bucket
+    - name: Invalidate CloudFront Cache
+      if: steps.changes.outputs.changes == 'true'
+      run: aws cloudfront create-invalidation --distribution-id ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID r} --paths "/*"
